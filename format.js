@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const dir = "../TESTSHOWS";
+const dir = process.argv[2];
 const chalk = require("chalk");
 
 let dirt = [
@@ -84,11 +84,16 @@ function getFilename(filename) {
 // Get rid of the uglyness.
 function doSurgery(file, callback = function() {}) {
   let i = 0;
-  let newFile;
+  let newFile = "";
   operation.forEach(function(v) {
-    if (file.indexOf(v[0]) > -1) {
-      newFile = file.replace(v[0], v[1]);
-      fs.rename(file, newFile, err => {
+    if (newFile.length > 0) {
+      lookFile = newFile;
+    } else {
+      lookFile = file;
+    }
+    if (lookFile.indexOf(v[0]) > -1) {
+      newFile = lookFile.replace(v[0], v[1]);
+      fs.rename(lookFile, newFile, err => {
         if (err) throw err;
       });
     }
@@ -120,7 +125,7 @@ let fixFile = function(fileName, file) {
   }
   //   deleteFile(renameDirt(doSurgery(file)));
 };
-let sherlock = function() {
+let sherlock = function(path) {
   fs.readdir(dir, (err, files) => {
     for (let i = 0; i < files.length; i++) {
       let file = dir + "/" + files[i];
@@ -129,6 +134,7 @@ let sherlock = function() {
         // console.log(file);
         if (fs.lstatSync(file).isDirectory()) {
           console.log(file, chalk.yellow(" is a directory"));
+          sherlock(fs.lstatSync(file));
         } else {
           fixFile(fileName, file);
         }
